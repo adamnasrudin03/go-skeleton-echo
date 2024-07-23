@@ -1,6 +1,9 @@
 package router
 
 import (
+	"net/http"
+
+	response_mapper "github.com/adamnasrudin03/go-helpers/response-mapper/v1"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -10,6 +13,10 @@ type Routes struct {
 }
 
 func NewRoutes() *Routes {
+	echo.NotFoundHandler = func(c echo.Context) error {
+		return c.JSON(http.StatusNotFound, response_mapper.ErrRouteNotFound())
+	}
+
 	r := &Routes{
 		HttpServer: echo.New(),
 	}
@@ -21,7 +28,6 @@ func NewRoutes() *Routes {
 	}))
 	r.HttpServer.Use(middleware.RequestID())
 	r.HttpServer.Use(middleware.Recover())
-
 	return r
 }
 
