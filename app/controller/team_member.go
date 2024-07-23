@@ -53,6 +53,16 @@ func (h *TeamMemberHandler) Mount(group *echo.Group) {
 	group.PUT("/:id", h.Update, middlewares.BasicAuth(h.Cfg.App.BasicUsername, h.Cfg.App.BasicPassword))
 }
 
+func (h *TeamMemberHandler) getParamID(c echo.Context) (uint64, error) {
+	idParam := strings.TrimSpace(c.Param("id"))
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		h.Logger.Errorf("TeamMemberController-getParamID error parse param: %v ", err)
+		return 0, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID")
+	}
+	return id, nil
+}
+
 func (h *TeamMemberHandler) Create(c echo.Context) error {
 	var (
 		opName = "TeamMemberController-Create"
@@ -85,20 +95,19 @@ func (h *TeamMemberHandler) Create(c echo.Context) error {
 
 func (h *TeamMemberHandler) GetDetail(c echo.Context) error {
 	var (
-		opName  = "TeamMemberController-GetDetail"
-		ctx     = c.Request().Context()
-		idParam = strings.TrimSpace(c.Param("id"))
-		err     error
+		opName = "TeamMemberController-GetDetail"
+		ctx    = c.Request().Context()
+		err    error
 	)
 
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id, err := h.getParamID(c)
 	if err != nil {
-		h.Logger.Errorf("%v error parse param: %v ", opName, err)
-		return utils.HttpError(c, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
+		return utils.HttpError(c, err)
 	}
 
 	res, err := h.Service.GetByID(ctx, id)
 	if err != nil {
+		h.Logger.Errorf("%v error: %v ", opName, err)
 		return utils.HttpError(c, err)
 	}
 
@@ -107,20 +116,19 @@ func (h *TeamMemberHandler) GetDetail(c echo.Context) error {
 
 func (h *TeamMemberHandler) Delete(c echo.Context) error {
 	var (
-		opName  = "TeamMemberController-Delete"
-		ctx     = c.Request().Context()
-		idParam = strings.TrimSpace(c.Param("id"))
-		err     error
+		opName = "TeamMemberController-Delete"
+		ctx    = c.Request().Context()
+		err    error
 	)
 
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id, err := h.getParamID(c)
 	if err != nil {
-		h.Logger.Errorf("%v error parse param: %v ", opName, err)
-		return utils.HttpError(c, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
+		return utils.HttpError(c, err)
 	}
 
 	err = h.Service.DeleteByID(ctx, id)
 	if err != nil {
+		h.Logger.Errorf("%v error: %v ", opName, err)
 		return utils.HttpError(c, err)
 	}
 
@@ -132,17 +140,15 @@ func (h *TeamMemberHandler) Delete(c echo.Context) error {
 
 func (h *TeamMemberHandler) Update(c echo.Context) error {
 	var (
-		opName  = "TeamMemberController-Update"
-		ctx     = c.Request().Context()
-		idParam = strings.TrimSpace(c.Param("id"))
-		input   dto.TeamMemberUpdateReq
-		err     error
+		opName = "TeamMemberController-Update"
+		ctx    = c.Request().Context()
+		input  dto.TeamMemberUpdateReq
+		err    error
 	)
 
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id, err := h.getParamID(c)
 	if err != nil {
-		h.Logger.Errorf("%v error parse param: %v ", opName, err)
-		return utils.HttpError(c, response_mapper.ErrInvalid("ID Anggota team", "Team Member ID"))
+		return utils.HttpError(c, err)
 	}
 
 	err = c.Bind(&input)
@@ -160,6 +166,7 @@ func (h *TeamMemberHandler) Update(c echo.Context) error {
 
 	err = h.Service.Update(ctx, input)
 	if err != nil {
+		h.Logger.Errorf("%v error: %v ", opName, err)
 		return utils.HttpError(c, err)
 	}
 
