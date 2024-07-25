@@ -30,10 +30,10 @@ func NewRoutes() *Routes {
 	r.HttpServer.Use(middleware.Recover())
 
 	r.HttpServer.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, response_mapper.RenderStruct(http.StatusOK, response_mapper.NewResponseMultiLang(response_mapper.MultiLanguages{
+		return c.JSON(http.StatusOK, response_mapper.RenderStruct(http.StatusOK, response_mapper.MultiLanguages{
 			ID: "selamat datang di server ini",
 			EN: "Welcome this server",
-		})))
+		}))
 	})
 
 	return r
